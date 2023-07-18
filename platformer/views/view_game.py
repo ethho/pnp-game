@@ -128,6 +128,7 @@ class GameView(View):
 
         # -- Enemies
         enemies_layer = self.tile_map.object_lists[LAYER_NAME_ENEMIES]
+        # breakpoint()
 
         for my_object in enemies_layer:
             cartesian = self.tile_map.get_cartesian(
@@ -200,10 +201,12 @@ class GameView(View):
         )
 
         # Draw hit boxes.
+        # TODO
+        # DEBUG
         # for wall in self.wall_list:
         #     wall.draw_hit_box(arcade.color.BLACK, 3)
-        #
-        # self.player_sprite.draw_hit_box(arcade.color.RED, 3)
+
+        self.player_sprite.draw_hit_box(arcade.color.RED, 3)
 
     def process_keychange(self):
         """

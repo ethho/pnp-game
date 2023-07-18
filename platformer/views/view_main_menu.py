@@ -39,6 +39,7 @@ class MainMenuView(View):
             if "character_select" not in self.window.views:
                 self.window.views["character_select"] = CharacterSelectView()
             self.window.show_view(self.window.views["character_select"])
+            # breakpoint()
 
         self.v_box.add(play_button.with_space_around(bottom=20))
 
@@ -64,7 +65,7 @@ class MainMenuView(View):
         arcade.start_render()
 
         arcade.draw_text(
-            "Arcade Community Platformer",
+            "Pook and Pook",
             self.window.width / 2,
             self.window.height - 125,
             arcade.color.ALLOY_ORANGE,

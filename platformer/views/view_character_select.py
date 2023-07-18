@@ -121,6 +121,10 @@ class CharacterSelectView(View):
 
         self.h_box_lower.add(back_button)
 
+        # Skip character selection.
+        self.selected_player = 1
+        on_click_play(None)
+
     def on_draw(self):
         arcade.start_render()
 
