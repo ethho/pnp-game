@@ -81,7 +81,8 @@ class GameView(View):
         self.gui_camera = arcade.Camera(self.window.width, self.window.height)
 
         # Map name
-        map_name = ":resources:tiled_maps/map_with_ladders.json"
+        map_name = "assets/tiled_maps/test0.json"
+        # map_name = ":resources:tiled_maps/map_with_ladders.json"
 
         # Layer Specific Options for the Tilemap
         layer_options = {
@@ -101,6 +102,7 @@ class GameView(View):
 
         # Load in TileMap
         self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options)
+        # breakpoint()
 
         # Initiate New Scene with our TileMap, this will automatically add all layers
         # from the map as SpriteLists in the scene in the proper order.
@@ -125,10 +127,12 @@ class GameView(View):
 
         # Calculate the right edge of the my_map in pixels
         self.end_of_map = self.tile_map.tiled_map.map_size.width * GRID_PIXEL_SIZE
-
-        # -- Enemies
-        enemies_layer = self.tile_map.object_lists[LAYER_NAME_ENEMIES]
         # breakpoint()
+
+        """
+        # -- Enemies
+        breakpoint()
+        enemies_layer = self.tile_map.object_lists[LAYER_NAME_ENEMIES]
 
         for my_object in enemies_layer:
             cartesian = self.tile_map.get_cartesian(
@@ -155,25 +159,38 @@ class GameView(View):
 
         # Add bullet spritelist to Scene
         self.scene.add_sprite_list(LAYER_NAME_BULLETS)
+        """
 
         # --- Other stuff
         # Set the background color
         if self.tile_map.tiled_map.background_color:
             arcade.set_background_color(self.tile_map.tiled_map.background_color)
+            assert self.tile_map.tiled_map.background_color is not None
+        else:
+            # DEBUG
+            arcade.set_background_color(arcade.color.AMAZON)
 
         # Create the 'physics engine'
         self.physics_engine = arcade.PhysicsEnginePlatformer(
             self.player_sprite,
-            [
-                self.scene.get_sprite_list(LAYER_NAME_PLATFORMS),
-                self.scene.get_sprite_list(LAYER_NAME_MOVING_PLATFORMS),
-            ],
+            # platforms=self.scene.name_mapping[LAYER_NAME_MOVING_PLATFORMS],
+            walls=self.scene.name_mapping[LAYER_NAME_PLATFORMS],
             gravity_constant=GRAVITY,
-            ladders=self.scene.get_sprite_list(LAYER_NAME_LADDERS),
+            # ladders=self.scene.name_mapping[LAYER_NAME_LADDERS],
+            # walls=self.scene.name_mapping[LAYER_NAME_PLATFORMS],
         )
+
+        # DEBUG
+        walls = self.scene.name_mapping[LAYER_NAME_PLATFORMS]
+        if not all(wall.hit_box for wall in walls) and DEBUG:
+            raise ValueError("Not all walls have hit boxes.")
+        # breakpoint()
 
     def on_show_view(self):
         arcade.set_background_color(self.tile_map.background_color)
+
+    def name_mapping(self, name: str):
+        return self.scene.name_mapping.get(name, list())
 
     def on_draw(self):
         """Render the screen."""

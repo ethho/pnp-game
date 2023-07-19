@@ -61,6 +61,10 @@ class MainMenuView(View):
 
         self.v_box.add(quit_button)
 
+        # Click play button when starting.
+        # DEBUG
+        on_click_play(None)
+
     def on_draw(self):
         arcade.start_render()
 
