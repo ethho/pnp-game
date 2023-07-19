@@ -163,12 +163,10 @@ class GameView(View):
 
         # --- Other stuff
         # Set the background color
+        if DEBUG:
+            assert self.tile_map.tiled_map.background_color is not None
         if self.tile_map.tiled_map.background_color:
             arcade.set_background_color(self.tile_map.tiled_map.background_color)
-            assert self.tile_map.tiled_map.background_color is not None
-        else:
-            # DEBUG
-            arcade.set_background_color(arcade.color.AMAZON)
 
         # Create the 'physics engine'
         self.physics_engine = arcade.PhysicsEnginePlatformer(
