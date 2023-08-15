@@ -101,8 +101,7 @@ class GameView(View):
         }
 
         # Load in TileMap
-        self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options)
-        # breakpoint()
+        self.tile_map = arcade.load_tilemap(map_name, 2., layer_options)
 
         # Initiate New Scene with our TileMap, this will automatically add all layers
         # from the map as SpriteLists in the scene in the proper order.
@@ -116,7 +115,7 @@ class GameView(View):
         self.shoot_timer = 0
 
         # Set up the player, specifically placing it at these coordinates.
-        self.player_sprite = Player(self.selected_player)
+        self.player_sprite = Player(character_number=self.selected_player)
         self.player_sprite.center_x = (
             self.tile_map.tiled_map.tile_size[0] * TILE_SCALING * PLAYER_START_X
         )

@@ -5,21 +5,9 @@ from platformer.entities.entity import Entity
 class Player(Entity):
     """Player Sprite"""
 
-    def __init__(self, character_number):
+    def __init__(self, character_number, center=None):
 
         if character_number == 1:
-            folder = "assets/images/sprites/players/person_female"
-            file_prefix = "character_femalePerson"
-        elif character_number == 2:
-            folder = "assets/images/sprites/players/adventurer_male"
-            file_prefix = "character_maleAdventurer"
-        elif character_number == 3:
-            folder = "assets/images/sprites/players/adventurer_female"
-            file_prefix = "character_femaleAdventurer"
-        elif character_number == 4:
-            folder = "assets/images/sprites/players/person_male"
-            file_prefix = "character_malePerson"
-        elif character_number == 5:
             folder = "assets/images/sprites/players/pook0"
             file_prefix = "character_pook0"
         else:
@@ -27,6 +15,10 @@ class Player(Entity):
 
         # Set up parent class
         super().__init__(folder, file_prefix)
+
+        if center is not None:
+            self.center_x = center[0]
+            self.center_y = center[1]
 
         # Track our state
         self.jumping = False
