@@ -3,11 +3,13 @@ MAP_WIDTH = 30
 MAP_HEIGHT = 20
 
 # Constants used to scale our sprites from their original size
-TILE_SCALING = 1
+TILE_SCALING = 1 * GLOBAL_SCALE
+# TILE_SCALING = 1 # Scale screen size without scaling the grid
 CHARACTER_SCALING = TILE_SCALING
 COIN_SCALING = TILE_SCALING
 SPRITE_PIXEL_SIZE = 16
-GRID_PIXEL_SIZE = SPRITE_PIXEL_SIZE * TILE_SCALING * GLOBAL_SCALE
+GRID_PIXEL_SIZE = SPRITE_PIXEL_SIZE * TILE_SCALING
+# GRID_PIXEL_SIZE = SPRITE_PIXEL_SIZE * TILE_SCALING * GLOBAL_SCALE # Scale screen size without scaling the grid
 
 # Tile map is 30 x 20 blocks of 16 sq pixels each
 SCREEN_WIDTH = MAP_WIDTH * GRID_PIXEL_SIZE
@@ -21,9 +23,9 @@ BULLET_SPEED = 12
 BULLET_DAMAGE = 25
 
 # Movement speed of player, in pixels per frame
-PLAYER_MOVEMENT_SPEED = 7
-GRAVITY = 1.5
-PLAYER_JUMP_SPEED = 30
+PLAYER_MOVEMENT_SPEED = 8
+GRAVITY = 1.1
+PLAYER_JUMP_SPEED = 17
 
 # How many pixels to keep as a minimum margin between the character
 # and the edge of the screen.
