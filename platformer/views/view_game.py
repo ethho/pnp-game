@@ -9,6 +9,7 @@ import arcade
 from platformer.constants import *
 from platformer.entities import Player, Robot, Zombie
 from platformer.views import View
+from platformer.logger import log
 
 
 class GameView(View):
@@ -101,7 +102,7 @@ class GameView(View):
         }
 
         # Load in TileMap
-        self.tile_map = arcade.load_tilemap(map_name, 2., layer_options)
+        self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options)
 
         # Initiate New Scene with our TileMap, this will automatically add all layers
         # from the map as SpriteLists in the scene in the proper order.
@@ -115,14 +116,24 @@ class GameView(View):
         self.shoot_timer = 0
 
         # Set up the player, specifically placing it at these coordinates.
-        self.player_sprite = Player(character_number=self.selected_player)
-        self.player_sprite.center_x = (
-            self.tile_map.tiled_map.tile_size[0] * TILE_SCALING * PLAYER_START_X
-        )
-        self.player_sprite.center_y = (
-            self.tile_map.tiled_map.tile_size[1] * TILE_SCALING * PLAYER_START_Y
+        self.player_sprite = Player(
+            character_number=self.selected_player,
+            center=(
+                # self.tile_map.tiled_map.tile_size[0] * TILE_SCALING * MAP_WIDTH * PLAYER_START_X,
+                # self.tile_map.tiled_map.tile_size[1] * TILE_SCALING * MAP_HEIGHT * PLAYER_START_Y
+                300,
+                200
+            )
         )
         self.scene.add_sprite(LAYER_NAME_PLAYER, self.player_sprite)
+
+        # DEBUG
+        log(f"Window size: {self.window.width}x{self.window.height}")
+        log(f"{self.player_sprite._center=}")
+        log(f"{TILE_SCALING=}")
+        log(f"{PLAYER_START_X=}")
+        log(f"{PLAYER_START_Y=}")
+        log(f"{GRID_PIXEL_SIZE=}")
 
         # Calculate the right edge of the my_map in pixels
         self.end_of_map = self.tile_map.tiled_map.map_size.width * GRID_PIXEL_SIZE
@@ -215,12 +226,9 @@ class GameView(View):
         )
 
         # Draw hit boxes.
-        # TODO
         # DEBUG
         # for wall in self.wall_list:
         #     wall.draw_hit_box(arcade.color.BLACK, 3)
-
-        self.player_sprite.draw_hit_box(arcade.color.RED, 3)
 
     def process_keychange(self):
         """

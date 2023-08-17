@@ -1,5 +1,6 @@
 from platformer.constants import LEFT_FACING, RIGHT_FACING
 from platformer.entities.entity import Entity
+from platformer.logger import log
 
 
 class Player(Entity):
@@ -17,8 +18,10 @@ class Player(Entity):
         super().__init__(folder, file_prefix)
 
         if center is not None:
+            self._center = center
             self.center_x = center[0]
             self.center_y = center[1]
+            log(f"Player center initialized at: ({self.center_x}, {self.center_y})")
 
         # Track our state
         self.jumping = False
