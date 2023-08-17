@@ -2,5 +2,5 @@ import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-def log(*args, **kw):
+def log(*args, level=logging.DEBUG, **kw):
     print(*args, **kw)

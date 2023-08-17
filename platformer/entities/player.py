@@ -11,6 +11,9 @@ class Player(Entity):
         if character_number == 1:
             folder = "assets/images/sprites/players/pook0"
             file_prefix = "character_pook0"
+        elif character_number == 2:
+            folder = "assets/images/sprites/players/pook2"
+            file_prefix = "character_pook2"
         else:
             raise ValueError(f"Unknown character number {character_number}")
 

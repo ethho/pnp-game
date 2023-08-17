@@ -20,12 +20,18 @@ class GameView(View):
         super().__init__()
 
         # Track the current state of what key is pressed
-        self.left_pressed = False
-        self.right_pressed = False
-        self.up_pressed = False
-        self.down_pressed = False
-        self.shoot_pressed = False
-        self.jump_needs_reset = False
+        self.left_pressed_p1 = False
+        self.left_pressed_p2 = False
+        self.right_pressed_p1 = False
+        self.right_pressed_p2 = False
+        self.up_pressed_p1 = False
+        self.up_pressed_p2 = False
+        self.down_pressed_p1 = False
+        self.down_pressed_p2 = False
+        self.shoot_pressed_p1 = False
+        self.shoot_pressed_p2 = False
+        self.jump_needs_reset_p1 = False
+        self.jump_needs_reset_p2 = False
 
         # Our TileMap Object
         self.tile_map = None
@@ -34,10 +40,12 @@ class GameView(View):
         self.scene = None
 
         # Separate variable that holds the player sprite
-        self.player_sprite = None
+        self.player_sprite_p1 = None
+        self.player_sprite_p2 = None
 
         # Our 'physics' engine
-        self.physics_engine = None
+        self.physics_engine_p1 = None
+        self.physics_engine_p2 = None
 
         # A Camera that can be used for scrolling the screen
         self.camera = None
@@ -51,11 +59,14 @@ class GameView(View):
         self.score = 0
 
         # Shooting mechanics
-        self.can_shoot = False
-        self.shoot_timer = 0
+        self.can_shoot_p1 = False
+        self.can_shoot_p2 = False
+        self.shoot_timer_p1 = 0
+        self.shoot_timer_p2 = 0
 
         # The selected player
-        self.selected_player = 0
+        self.selected_player_p1 = 1
+        self.selected_player_p2 = 2
 
         # Load sounds
         self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
@@ -70,12 +81,18 @@ class GameView(View):
         super().setup()
 
         # Track the current state of what key is pressed
-        self.left_pressed = False
-        self.right_pressed = False
-        self.up_pressed = False
-        self.down_pressed = False
-        self.shoot_pressed = False
-        self.jump_needs_reset = False
+        self.left_pressed_p1 = False
+        self.left_pressed_p2 = False
+        self.right_pressed_p1 = False
+        self.right_pressed_p2 = False
+        self.up_pressed_p1 = False
+        self.up_pressed_p2 = False
+        self.down_pressed_p1 = False
+        self.down_pressed_p2 = False
+        self.shoot_pressed_p1 = False
+        self.shoot_pressed_p2 = False
+        self.jump_needs_reset_p1 = False
+        self.jump_needs_reset_p2 = False
 
         # Setup the Cameras
         self.camera = arcade.Camera(self.window.width, self.window.height)
@@ -112,12 +129,14 @@ class GameView(View):
         self.score = 0
 
         # Shooting mechanics
-        self.can_shoot = True
-        self.shoot_timer = 0
+        self.can_shoot_p1 = False
+        self.can_shoot_p2 = False
+        self.shoot_timer_p1 = 0
+        self.shoot_timer_p2 = 0
 
         # Set up the player, specifically placing it at these coordinates.
-        self.player_sprite = Player(
-            character_number=self.selected_player,
+        self.player_sprite_p1 = Player(
+            character_number=self.selected_player_p1,
             center=(
                 # self.tile_map.tiled_map.tile_size[0] * TILE_SCALING * MAP_WIDTH * PLAYER_START_X,
                 # self.tile_map.tiled_map.tile_size[1] * TILE_SCALING * MAP_HEIGHT * PLAYER_START_Y
@@ -125,15 +144,25 @@ class GameView(View):
                 200
             )
         )
-        self.scene.add_sprite(LAYER_NAME_PLAYER, self.player_sprite)
+        self.player_sprite_p2 = Player(
+            character_number=self.selected_player_p2,
+            center=(
+                # self.tile_map.tiled_map.tile_size[0] * TILE_SCALING * MAP_WIDTH * PLAYER_START_X,
+                # self.tile_map.tiled_map.tile_size[1] * TILE_SCALING * MAP_HEIGHT * PLAYER_START_Y
+                350,
+                200
+            )
+        )
+        self.scene.add_sprite(LAYER_NAME_PLAYER, self.player_sprite_p1)
+        self.scene.add_sprite(LAYER_NAME_PLAYER2, self.player_sprite_p2)
 
         # DEBUG
-        log(f"Window size: {self.window.width}x{self.window.height}")
-        log(f"{self.player_sprite._center=}")
-        log(f"{TILE_SCALING=}")
-        log(f"{PLAYER_START_X=}")
-        log(f"{PLAYER_START_Y=}")
-        log(f"{GRID_PIXEL_SIZE=}")
+        # log(f"Window size: {self.window.width}x{self.window.height}")
+        # log(f"{self.player_sprite._center=}")
+        # log(f"{TILE_SCALING=}")
+        # log(f"{PLAYER_START_X=}")
+        # log(f"{PLAYER_START_Y=}")
+        # log(f"{GRID_PIXEL_SIZE=}")
 
         # Calculate the right edge of the my_map in pixels
         self.end_of_map = self.tile_map.tiled_map.map_size.width * GRID_PIXEL_SIZE
@@ -179,8 +208,17 @@ class GameView(View):
             arcade.set_background_color(self.tile_map.tiled_map.background_color)
 
         # Create the 'physics engine'
-        self.physics_engine = arcade.PhysicsEnginePlatformer(
-            self.player_sprite,
+        self.physics_engine_p1 = arcade.PhysicsEnginePlatformer(
+            self.player_sprite_p1,
+            # platforms=self.scene.name_mapping[LAYER_NAME_MOVING_PLATFORMS],
+            walls=self.scene.name_mapping[LAYER_NAME_PLATFORMS],
+            gravity_constant=GRAVITY,
+            # ladders=self.scene.name_mapping[LAYER_NAME_LADDERS],
+            # walls=self.scene.name_mapping[LAYER_NAME_PLATFORMS],
+        )
+
+        self.physics_engine_p2 = arcade.PhysicsEnginePlatformer(
+            self.player_sprite_p2,
             # platforms=self.scene.name_mapping[LAYER_NAME_MOVING_PLATFORMS],
             walls=self.scene.name_mapping[LAYER_NAME_PLATFORMS],
             gravity_constant=GRAVITY,
@@ -192,7 +230,6 @@ class GameView(View):
         walls = self.scene.name_mapping[LAYER_NAME_PLATFORMS]
         if not all(wall.hit_box for wall in walls) and DEBUG:
             raise ValueError("Not all walls have hit boxes.")
-        # breakpoint()
 
     def on_show_view(self):
         arcade.set_background_color(self.tile_map.background_color)
@@ -219,8 +256,8 @@ class GameView(View):
         score_text = f"Score: {self.score}"
         arcade.draw_text(
             score_text,
-            10,
-            10,
+            250,
+            200,
             arcade.csscolor.BLACK,
             18,
         )
@@ -231,80 +268,173 @@ class GameView(View):
         #     wall.draw_hit_box(arcade.color.BLACK, 3)
 
     def process_keychange(self):
+        self.process_keychange_p1()
+        self.process_keychange_p2()
+
+    def process_keychange_p1(self):
         """
         Called when we change a key up/down or we move on/off a ladder.
         """
         # Process up/down
-        if self.up_pressed and not self.down_pressed:
-            if self.physics_engine.is_on_ladder():
-                self.player_sprite.change_y = PLAYER_MOVEMENT_SPEED
+        if self.up_pressed_p1 and not self.down_pressed_p1:
+            if self.physics_engine_p1.is_on_ladder():
+                self.player_sprite_p1.change_y = PLAYER_MOVEMENT_SPEED
             elif (
-                self.physics_engine.can_jump(y_distance=10)
-                and not self.jump_needs_reset
+                self.physics_engine_p1.can_jump(y_distance=10)
+                and not self.jump_needs_reset_p1
             ):
-                self.player_sprite.change_y = PLAYER_JUMP_SPEED
-                self.jump_needs_reset = True
+                self.player_sprite_p1.change_y = PLAYER_JUMP_SPEED
+                self.jump_needs_reset_p1 = True
                 arcade.play_sound(self.jump_sound)
-        elif self.down_pressed and not self.up_pressed:
-            if self.physics_engine.is_on_ladder():
-                self.player_sprite.change_y = -PLAYER_MOVEMENT_SPEED
+        elif self.down_pressed_p1 and not self.up_pressed_p1:
+            if self.physics_engine_p1.is_on_ladder():
+                self.player_sprite_p1.change_y = -PLAYER_MOVEMENT_SPEED
 
         # Process up/down when on a ladder and no movement
-        if self.physics_engine.is_on_ladder():
-            if not self.up_pressed and not self.down_pressed:
-                self.player_sprite.change_y = 0
-            elif self.up_pressed and self.down_pressed:
-                self.player_sprite.change_y = 0
+        if self.physics_engine_p1.is_on_ladder():
+            if not self.up_pressed_p1 and not self.down_pressed_p1:
+                self.player_sprite_p1.change_y = 0
+            elif self.up_pressed_p1 and self.down_pressed_p1:
+                self.player_sprite_p1.change_y = 0
 
         # Process left/right
-        if self.right_pressed and not self.left_pressed:
-            self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
-        elif self.left_pressed and not self.right_pressed:
-            self.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
+        if self.right_pressed_p1 and not self.left_pressed_p1:
+            self.player_sprite_p1.change_x = PLAYER_MOVEMENT_SPEED
+        elif self.left_pressed_p1 and not self.right_pressed_p1:
+            self.player_sprite_p1.change_x = -PLAYER_MOVEMENT_SPEED
         else:
-            self.player_sprite.change_x = 0
+            self.player_sprite_p1.change_x = 0
+
+    def process_keychange_p2(self):
+        """
+        Called when we change a key up/down or we move on/off a ladder.
+        """
+        # Process up/down
+        if self.up_pressed_p2 and not self.down_pressed_p2:
+            if self.physics_engine_p2.is_on_ladder():
+                self.player_sprite_p2.change_y = PLAYER_MOVEMENT_SPEED
+            elif (
+                self.physics_engine_p2.can_jump(y_distance=10)
+                and not self.jump_needs_reset_p2
+            ):
+                self.player_sprite_p2.change_y = PLAYER_JUMP_SPEED
+                self.jump_needs_reset_p2 = True
+                arcade.play_sound(self.jump_sound)
+        elif self.down_pressed_p2 and not self.up_pressed_p2:
+            if self.physics_engine_p2.is_on_ladder():
+                self.player_sprite_p2.change_y = -PLAYER_MOVEMENT_SPEED
+
+        # Process up/down when on a ladder and no movement
+        if self.physics_engine_p2.is_on_ladder():
+            if not self.up_pressed_p2 and not self.down_pressed_p2:
+                self.player_sprite_p2.change_y = 0
+            elif self.up_pressed_p2 and self.down_pressed_p2:
+                self.player_sprite_p2.change_y = 0
+
+        # Process left/right
+        if self.right_pressed_p2 and not self.left_pressed_p2:
+            self.player_sprite_p2.change_x = PLAYER_MOVEMENT_SPEED
+        elif self.left_pressed_p2 and not self.right_pressed_p2:
+            self.player_sprite_p2.change_x = -PLAYER_MOVEMENT_SPEED
+        else:
+            self.player_sprite_p2.change_x = 0
 
     def on_key_press(self, key, modifiers):
+        self.on_key_press_p1(key, modifiers)
+        self.on_key_press_p2(key, modifiers)
+
+    def on_key_press_p1(self, key, modifiers):
         """Called whenever a key is pressed."""
 
-        if key == arcade.key.UP or key == arcade.key.W:
-            self.up_pressed = True
-        elif key == arcade.key.DOWN or key == arcade.key.S:
-            self.down_pressed = True
-        elif key == arcade.key.LEFT or key == arcade.key.A:
-            self.left_pressed = True
-        elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.right_pressed = True
-
-        if key == arcade.key.Q:
-            self.shoot_pressed = True
-
-        if key == arcade.key.ESCAPE:
+        if key == arcade.key.W:
+            self.up_pressed_p1 = True
+        elif key == arcade.key.S:
+            self.down_pressed_p1 = True
+        elif key == arcade.key.A:
+            self.left_pressed_p1 = True
+        elif key == arcade.key.D:
+            self.right_pressed_p1 = True
+        elif key == arcade.key.SPACE:
+            self.shoot_pressed_p1 = True
+        elif key == arcade.key.ESCAPE:
             self.window.show_view(self.window.views["pause"])
+        else:
+            log(f"p1 unmapped key pressed: {key}")
+            return
 
-        self.process_keychange()
+        self.process_keychange_p1()
+
+    def on_key_press_p2(self, key, modifiers):
+        """Called whenever a key is pressed."""
+
+        if key == arcade.key.UP:
+            self.up_pressed_p2 = True
+        elif key == arcade.key.DOWN:
+            self.down_pressed_p2 = True
+        elif key == arcade.key.LEFT:
+            self.left_pressed_p2 = True
+        elif key == arcade.key.RIGHT:
+            self.right_pressed_p2 = True
+        elif key == arcade.key.RSHIFT:
+            self.shoot_pressed_p2 = True
+        else:
+            log(f"p2 unmapped key pressed: {key}")
+            return
+
+        self.process_keychange_p2()
 
     def on_key_release(self, key, modifiers):
+        self.on_key_release_p1(key, modifiers)
+        self.on_key_release_p2(key, modifiers)
+
+    def on_key_release_p1(self, key, modifiers):
         """Called when the user releases a key."""
 
-        if key == arcade.key.UP or key == arcade.key.W:
-            self.up_pressed = False
-            self.jump_needs_reset = False
-        elif key == arcade.key.DOWN or key == arcade.key.S:
-            self.down_pressed = False
-        elif key == arcade.key.LEFT or key == arcade.key.A:
-            self.left_pressed = False
-        elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.right_pressed = False
+        if key == arcade.key.W:
+            self.up_pressed_p1 = False
+            self.jump_needs_reset_p1 = False
+        elif key == arcade.key.S:
+            self.down_pressed_p1 = False
+        elif key == arcade.key.A:
+            self.left_pressed_p1 = False
+        elif key == arcade.key.D:
+            self.right_pressed_p1 = False
+        elif key == arcade.key.SPACE:
+            self.shoot_pressed_p1 = False
+        else:
+            log(f"p1 unmapped key released: {key}")
+            return
 
-        if key == arcade.key.Q:
-            self.shoot_pressed = False
+        self.process_keychange_p1()
 
-        self.process_keychange()
+    def on_key_release_p2(self, key, modifiers):
+        """Called when the user releases a key."""
+
+        if key == arcade.key.UP:
+            self.up_pressed_p2 = False
+            self.jump_needs_reset_p2 = False
+        elif key == arcade.key.DOWN:
+            self.down_pressed_p2 = False
+        elif key == arcade.key.LEFT:
+            self.left_pressed_p2 = False
+        elif key == arcade.key.RIGHT:
+            self.right_pressed_p2 = False
+        elif key == arcade.key.RSHIFT:
+            self.shoot_pressed_p2 = False
+        else:
+            log(f"p2 unmapped key released: {key}")
+            return
+
+        self.process_keychange_p2()
 
     def center_camera_to_player(self, speed=0.2):
-        screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width / 2)
-        screen_center_y = self.player_sprite.center_y - (
+        self.center_camera_to_player_p1(speed)
+        # TODO: need to do p2?
+        # self.center_camera_to_player_p2(speed)
+
+    def center_camera_to_player_p1(self, speed=0.2):
+        screen_center_x = self.player_sprite_p1.center_x - (self.camera.viewport_width / 2)
+        screen_center_y = self.player_sprite_p1.center_y - (
             self.camera.viewport_height / 2
         )
         if screen_center_x < 0:
@@ -319,45 +449,81 @@ class GameView(View):
         """Movement and game logic"""
 
         # Move the player with the physics engine
-        self.physics_engine.update()
+        self.physics_engine_p1.update()
+        self.physics_engine_p2.update()
 
         # Update animations
-        if self.physics_engine.can_jump():
-            self.player_sprite.can_jump = False
+        if self.physics_engine_p1.can_jump():
+            self.player_sprite_p1.can_jump = False
         else:
-            self.player_sprite.can_jump = True
+            self.player_sprite_p1.can_jump = True
 
-        if self.physics_engine.is_on_ladder() and not self.physics_engine.can_jump():
-            self.player_sprite.is_on_ladder = True
-            self.process_keychange()
+        if self.physics_engine_p2.can_jump():
+            self.player_sprite_p2.can_jump = False
         else:
-            self.player_sprite.is_on_ladder = False
-            self.process_keychange()
+            self.player_sprite_p2.can_jump = True
 
-        if self.can_shoot:
-            if self.shoot_pressed:
+        if self.physics_engine_p1.is_on_ladder() and not self.physics_engine_p1.can_jump():
+            self.player_sprite_p1.is_on_ladder = True
+        else:
+            self.player_sprite_p1.is_on_ladder = False
+        self.process_keychange_p1()
+
+        if self.physics_engine_p2.is_on_ladder() and not self.physics_engine_p2.can_jump():
+            self.player_sprite_p2.is_on_ladder = True
+        else:
+            self.player_sprite_p2.is_on_ladder = False
+        self.process_keychange_p2()
+
+        if self.can_shoot_p1:
+            if self.shoot_pressed_p1:
                 arcade.play_sound(self.shoot_sound)
-                bullet = arcade.Sprite(
+                bullet_p1 = arcade.Sprite(
                     ":resources:images/space_shooter/laserBlue01.png",
                     SPRITE_SCALING_LASER,
                 )
 
-                if self.player_sprite.facing_direction == RIGHT_FACING:
-                    bullet.change_x = BULLET_SPEED
+                if self.player_sprite_p1.facing_direction == RIGHT_FACING:
+                    bullet_p1.change_x = BULLET_SPEED
                 else:
-                    bullet.change_x = -BULLET_SPEED
+                    bullet_p1.change_x = -BULLET_SPEED
 
-                bullet.center_x = self.player_sprite.center_x
-                bullet.center_y = self.player_sprite.center_y
+                bullet_p1.center_x = self.player_sprite_p1.center_x
+                bullet_p1.center_y = self.player_sprite_p1.center_y
 
-                self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
+                self.scene.add_sprite(LAYER_NAME_BULLETS, bullet_p1)
 
-                self.can_shoot = False
+                self.can_shoot_p1 = False
         else:
-            self.shoot_timer += 1
-            if self.shoot_timer == SHOOT_SPEED:
-                self.can_shoot = True
-                self.shoot_timer = 0
+            self.shoot_timer_p1 += 1
+            if self.shoot_timer_p1 == SHOOT_SPEED:
+                self.can_shoot_p1 = True
+                self.shoot_timer_p1 = 0
+
+        if self.can_shoot_p2:
+            if self.shoot_pressed_p2:
+                arcade.play_sound(self.shoot_sound)
+                bullet_p2 = arcade.Sprite(
+                    ":resources:images/space_shooter/laserBlue01.png",
+                    SPRITE_SCALING_LASER,
+                )
+
+                if self.player_sprite_p2.facing_direction == RIGHT_FACING:
+                    bullet_p2.change_x = BULLET_SPEED
+                else:
+                    bullet_p2.change_x = -BULLET_SPEED
+
+                bullet_p2.center_x = self.player_sprite_p2.center_x
+                bullet_p2.center_y = self.player_sprite_p2.center_y
+
+                self.scene.add_sprite(LAYER_NAME_BULLETS, bullet_p2)
+
+                self.can_shoot_p2 = False
+        else:
+            self.shoot_timer_p2 += 1
+            if self.shoot_timer_p2 == SHOOT_SPEED:
+                self.can_shoot_p2 = True
+                self.shoot_timer_p2 = 0
 
         # Update Animations
         self.scene.update_animation(
@@ -366,6 +532,7 @@ class GameView(View):
                 LAYER_NAME_COINS,
                 LAYER_NAME_BACKGROUND,
                 LAYER_NAME_PLAYER,
+                LAYER_NAME_PLAYER2,
                 LAYER_NAME_ENEMIES,
             ],
         )
@@ -415,8 +582,15 @@ class GameView(View):
             ):
                 wall.change_y *= -1
 
-        player_collision_list = arcade.check_for_collision_with_lists(
-            self.player_sprite,
+        player_collision_list_p1 = arcade.check_for_collision_with_lists(
+            self.player_sprite_p1,
+            [
+                self.scene.get_sprite_list(LAYER_NAME_COINS),
+                self.scene.get_sprite_list(LAYER_NAME_ENEMIES),
+            ],
+        )
+        player_collision_list_p2 = arcade.check_for_collision_with_lists(
+            self.player_sprite_p2,
             [
                 self.scene.get_sprite_list(LAYER_NAME_COINS),
                 self.scene.get_sprite_list(LAYER_NAME_ENEMIES),
@@ -460,10 +634,30 @@ class GameView(View):
                 bullet.remove_from_sprite_lists()
 
         # Loop through each coin we hit (if any) and remove it
-        for collision in player_collision_list:
+        for collision in player_collision_list_p1:
 
             if self.scene.get_sprite_list(LAYER_NAME_ENEMIES) in collision.sprite_lists:
                 arcade.play_sound(self.game_over)
+                # TODO: player dies
+                self.window.show_view(self.window.views["game_over"])
+                return
+            else:
+                # Figure out how many points this coin is worth
+                if "Points" not in collision.properties:
+                    print("Warning, collected a coin without a Points property.")
+                else:
+                    points = int(collision.properties["Points"])
+                    self.score += points
+
+                # Remove the coin
+                collision.remove_from_sprite_lists()
+                arcade.play_sound(self.collect_coin_sound)
+
+        for collision in player_collision_list_p2:
+
+            if self.scene.get_sprite_list(LAYER_NAME_ENEMIES) in collision.sprite_lists:
+                arcade.play_sound(self.game_over)
+                # TODO: player dies
                 self.window.show_view(self.window.views["game_over"])
                 return
             else:
