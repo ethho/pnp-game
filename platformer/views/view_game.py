@@ -99,7 +99,7 @@ class GameView(View):
         self.gui_camera = arcade.Camera(self.window.width, self.window.height)
 
         # Map name
-        map_name = "assets/tiled_maps/test0.json"
+        map_name = "assets/tiled_maps/test1.json"
         # map_name = ":resources:tiled_maps/map_with_ladders.json"
 
         # Layer Specific Options for the Tilemap

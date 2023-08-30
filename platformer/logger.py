@@ -1,6 +1,7 @@
 import logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 def log(*args, level=logging.DEBUG, **kw):
-    print(*args, **kw)
+    if level >= logger.level:
+        print(*args, **kw)
