@@ -102,6 +102,7 @@ class GameView(View):
         map_name = "assets/tiled_maps/test1.json"
         # map_name = ":resources:tiled_maps/map_with_ladders.json"
 
+
         # Layer Specific Options for the Tilemap
         layer_options = {
             LAYER_NAME_PLATFORMS: {
@@ -120,6 +121,22 @@ class GameView(View):
 
         # Load in TileMap
         self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options)
+
+        # Parse static text from the tilemap
+        self.static_text = list()
+        for obj in self.tile_map.get_tilemap_layer('Text').tiled_objects:
+            new_text = arcade.Text(
+                obj.text,
+                GLOBAL_SCALE * obj.coordinates[0],
+                1600 - (GLOBAL_SCALE * obj.coordinates[1]),
+                arcade.color.BLACK,
+                obj.font_size,
+                font_name=obj.font_family,
+            )
+            print(new_text, new_text.x, new_text.y)
+            new_text._start_x = new_text.x
+            new_text._start_y = new_text.y
+            self.static_text.append(new_text)
 
         # Initiate New Scene with our TileMap, this will automatically add all layers
         # from the map as SpriteLists in the scene in the proper order.
@@ -256,11 +273,19 @@ class GameView(View):
         score_text = f"Score: {self.score}"
         arcade.draw_text(
             score_text,
-            250,
-            200,
+            25,
+            600,
             arcade.csscolor.BLACK,
             18,
         )
+
+        # Draw stationary text defined in the tile map
+        camx, camy = self.camera.position
+        for text in self.static_text:
+            # breakpoint()
+            text.x = text._start_x - camx
+            text.y = text._start_y - camy
+            text.draw()
 
         # Draw hit boxes.
         # DEBUG
