@@ -31,6 +31,12 @@ class Player(Entity):
         self.climbing = False
         self.is_on_ladder = False
 
+    @property
+    def is_dead(self):
+        if self.center_y < 0:
+            return True
+        return False
+
     def update_animation(self, delta_time: float = 1 / 60):
 
         # Figure out if we need to flip face left or right

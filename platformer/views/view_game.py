@@ -133,7 +133,7 @@ class GameView(View):
                 obj.font_size,
                 font_name=obj.font_family,
             )
-            print(new_text, new_text.x, new_text.y)
+            # print(new_text, new_text.x, new_text.y)
             new_text._start_x = new_text.x
             new_text._start_y = new_text.y
             self.static_text.append(new_text)
@@ -271,13 +271,13 @@ class GameView(View):
 
         # Draw our score on the screen, scrolling it with the viewport
         score_text = f"Score: {self.score}"
-        arcade.draw_text(
-            score_text,
-            25,
-            600,
-            arcade.csscolor.BLACK,
-            18,
-        )
+        # arcade.draw_text(
+        #     score_text,
+        #     25,
+        #     600,
+        #     arcade.csscolor.BLACK,
+        #     18,
+        # )
 
         # Draw stationary text defined in the tile map
         camx, camy = self.camera.position
@@ -453,13 +453,30 @@ class GameView(View):
         self.process_keychange_p2()
 
     def center_camera_to_player(self, speed=0.2):
-        self.center_camera_to_player_p1(speed)
-        # TODO: need to do p2?
-        # self.center_camera_to_player_p2(speed)
+        if not self.player_sprite_p1.is_dead:
+            self.center_camera_to_player_p1(speed)
+        elif not self.player_sprite_p2.is_dead:
+            self.center_camera_to_player_p2(speed)
+        else:
+            # TODO
+            self.center_camera_to_player_p1(speed)
 
     def center_camera_to_player_p1(self, speed=0.2):
         screen_center_x = self.player_sprite_p1.center_x - (self.camera.viewport_width / 2)
         screen_center_y = self.player_sprite_p1.center_y - (
+            self.camera.viewport_height / 2
+        )
+        if screen_center_x < 0:
+            screen_center_x = 0
+        if screen_center_y < 0:
+            screen_center_y = 0
+        player_centered = screen_center_x, screen_center_y
+
+        self.camera.move_to(player_centered, speed)
+
+    def center_camera_to_player_p2(self, speed=0.2):
+        screen_center_x = self.player_sprite_p2.center_x - (self.camera.viewport_width / 2)
+        screen_center_y = self.player_sprite_p2.center_y - (
             self.camera.viewport_height / 2
         )
         if screen_center_x < 0:
@@ -502,10 +519,12 @@ class GameView(View):
 
         if self.can_shoot_p1:
             if self.shoot_pressed_p1:
+                # print(self.player_sprite_p1.position)
                 arcade.play_sound(self.shoot_sound)
                 bullet_p1 = arcade.Sprite(
                     ":resources:images/space_shooter/laserBlue01.png",
                     SPRITE_SCALING_LASER,
+                    flipped_horizontally=self.player_sprite_p1.facing_direction == LEFT_FACING,
                 )
 
                 if self.player_sprite_p1.facing_direction == RIGHT_FACING:
@@ -531,6 +550,7 @@ class GameView(View):
                 bullet_p2 = arcade.Sprite(
                     ":resources:images/space_shooter/laserBlue01.png",
                     SPRITE_SCALING_LASER,
+                    flipped_horizontally=self.player_sprite_p2.facing_direction == LEFT_FACING,
                 )
 
                 if self.player_sprite_p2.facing_direction == RIGHT_FACING:
@@ -662,8 +682,8 @@ class GameView(View):
         for collision in player_collision_list_p1:
 
             if self.scene.get_sprite_list(LAYER_NAME_ENEMIES) in collision.sprite_lists:
-                arcade.play_sound(self.game_over)
                 # TODO: player dies
+                arcade.play_sound(self.game_over)
                 self.window.show_view(self.window.views["game_over"])
                 return
             else:
@@ -696,6 +716,11 @@ class GameView(View):
                 # Remove the coin
                 collision.remove_from_sprite_lists()
                 arcade.play_sound(self.collect_coin_sound)
+
+
+        if self.player_sprite_p1.is_dead and self.player_sprite_p2.is_dead:
+            arcade.play_sound(self.game_over)
+            self.window.show_view(self.window.views["game_over"])
 
         # Position the camera
         self.center_camera_to_player()

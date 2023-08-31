@@ -23,9 +23,9 @@ BULLET_SPEED = 12
 BULLET_DAMAGE = 25
 
 # Movement speed of player, in pixels per frame
-PLAYER_MOVEMENT_SPEED = 6
-GRAVITY = 1.
-PLAYER_JUMP_SPEED = 20
+PLAYER_MOVEMENT_SPEED = 4.5
+GRAVITY = 0.65
+PLAYER_JUMP_SPEED = 13
 
 # How many pixels to keep as a minimum margin between the character
 # and the edge of the screen.
