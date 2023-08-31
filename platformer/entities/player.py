@@ -30,10 +30,21 @@ class Player(Entity):
         self.jumping = False
         self.climbing = False
         self.is_on_ladder = False
+        self.hit_enemy = False
+        self._is_dead = False
+
+    def kill(self):
+        self._is_dead = True
+        self.remove_from_sprite_lists()
+        self.jumping = True
 
     @property
     def is_dead(self):
+        if self._is_dead:
+            return True
         if self.center_y < 0:
+            return True
+        if self.hit_enemy:
             return True
         return False
 

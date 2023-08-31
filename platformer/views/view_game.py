@@ -7,7 +7,7 @@ import os
 import arcade
 
 from platformer.constants import *
-from platformer.entities import Player, Robot, Zombie
+from platformer.entities import Player, Robot, Zombie, Hammy0, Enemy
 from platformer.views import View
 from platformer.logger import log
 
@@ -185,20 +185,22 @@ class GameView(View):
         self.end_of_map = self.tile_map.tiled_map.map_size.width * GRID_PIXEL_SIZE
         # breakpoint()
 
-        """
         # -- Enemies
-        breakpoint()
-        enemies_layer = self.tile_map.object_lists[LAYER_NAME_ENEMIES]
+        enemies_layer = self.tile_map.get_tilemap_layer('Enemies')
 
-        for my_object in enemies_layer:
+        for my_object in enemies_layer.tiled_objects:
             cartesian = self.tile_map.get_cartesian(
-                my_object.shape[0], my_object.shape[1]
+                my_object.coordinates[0], my_object.coordinates[1]
             )
-            enemy_type = my_object.properties["type"]
+            enemy_type = my_object.class_
             if enemy_type == "robot":
                 enemy = Robot()
             elif enemy_type == "zombie":
                 enemy = Zombie()
+            elif enemy_type == "hammy0":
+                enemy = Hammy0()
+            else:
+                raise Exception(f"Unknown enemy type '{enemy_type}'")
             enemy.center_x = math.floor(
                 cartesian[0] * TILE_SCALING * self.tile_map.tile_width
             )
@@ -215,7 +217,6 @@ class GameView(View):
 
         # Add bullet spritelist to Scene
         self.scene.add_sprite_list(LAYER_NAME_BULLETS)
-        """
 
         # --- Other stuff
         # Set the background color
@@ -517,7 +518,7 @@ class GameView(View):
             self.player_sprite_p2.is_on_ladder = False
         self.process_keychange_p2()
 
-        if self.can_shoot_p1:
+        if self.can_shoot_p1 and not self.player_sprite_p1.is_dead:
             if self.shoot_pressed_p1:
                 # print(self.player_sprite_p1.position)
                 arcade.play_sound(self.shoot_sound)
@@ -544,7 +545,7 @@ class GameView(View):
                 self.can_shoot_p1 = True
                 self.shoot_timer_p1 = 0
 
-        if self.can_shoot_p2:
+        if self.can_shoot_p2 and not self.player_sprite_p2.is_dead:
             if self.shoot_pressed_p2:
                 arcade.play_sound(self.shoot_sound)
                 bullet_p2 = arcade.Sprite(
@@ -656,16 +657,21 @@ class GameView(View):
                 bullet.remove_from_sprite_lists()
 
                 for collision in hit_list:
-                    if (
-                        self.scene.get_sprite_list(LAYER_NAME_ENEMIES)
-                        in collision.sprite_lists
-                    ):
-                        # The collision was with an enemy
-                        collision.health -= BULLET_DAMAGE
+                    sprite_list = self.scene.get_sprite_list(LAYER_NAME_ENEMIES)
+                    enemies = [sprite for sprite in sprite_list if isinstance(sprite, Enemy)]
+                    if enemies:
+                        enemy = enemies[0]
+                        print(enemy.health)
+                        assert isinstance(enemy, Enemy), f"{enemy=} is not an Enemy"
 
-                        if collision.health <= 0:
-                            collision.remove_from_sprite_lists()
+                        # The collision was with an enemy
+                        enemy.health -= BULLET_DAMAGE
+
+                        if enemy.health <= 0:
+                            enemy.kill()
                             self.score += 100
+                            log(f'Enemy killed: {enemy}')
+                            collision.remove_from_sprite_lists()
 
                         # Hit sound
                         arcade.play_sound(self.hit_sound)
@@ -682,10 +688,10 @@ class GameView(View):
         for collision in player_collision_list_p1:
 
             if self.scene.get_sprite_list(LAYER_NAME_ENEMIES) in collision.sprite_lists:
-                # TODO: player dies
-                arcade.play_sound(self.game_over)
-                self.window.show_view(self.window.views["game_over"])
-                return
+                # player dies
+                # arcade.play_sound(self.game_over)
+                self.player_sprite_p1.hit_enemy = True
+                self.player_sprite_p1.kill()
             else:
                 # Figure out how many points this coin is worth
                 if "Points" not in collision.properties:
@@ -701,10 +707,9 @@ class GameView(View):
         for collision in player_collision_list_p2:
 
             if self.scene.get_sprite_list(LAYER_NAME_ENEMIES) in collision.sprite_lists:
-                arcade.play_sound(self.game_over)
-                # TODO: player dies
-                self.window.show_view(self.window.views["game_over"])
-                return
+                # arcade.play_sound(self.game_over)
+                self.player_sprite_p2.hit_enemy = True
+                self.player_sprite_p2.kill()
             else:
                 # Figure out how many points this coin is worth
                 if "Points" not in collision.properties:
@@ -721,6 +726,7 @@ class GameView(View):
         if self.player_sprite_p1.is_dead and self.player_sprite_p2.is_dead:
             arcade.play_sound(self.game_over)
             self.window.show_view(self.window.views["game_over"])
+            return
 
         # Position the camera
         self.center_camera_to_player()
