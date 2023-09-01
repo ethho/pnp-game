@@ -189,7 +189,7 @@ class GameView(View):
         enemies_layer = self.tile_map.get_tilemap_layer('Enemies')
 
         for my_object in enemies_layer.tiled_objects:
-            # continue
+            continue
             cartesian = self.tile_map.get_cartesian(
                 my_object.coordinates[0], my_object.coordinates[1]
             )
