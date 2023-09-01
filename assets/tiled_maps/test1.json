@@ -350,9 +350,19 @@
                  "name":"",
                  "properties":[
                         {
+                         "name":"boundary_left",
+                         "type":"float",
+                         "value":290
+                        }, 
+                        {
+                         "name":"boundary_right",
+                         "type":"float",
+                         "value":390
+                        }, 
+                        {
                          "name":"change_x",
                          "type":"float",
-                         "value":-1
+                         "value":-3
                         }],
                  "rotation":0,
                  "type":"hammy0",

@@ -189,6 +189,7 @@ class GameView(View):
         enemies_layer = self.tile_map.get_tilemap_layer('Enemies')
 
         for my_object in enemies_layer.tiled_objects:
+            # continue
             cartesian = self.tile_map.get_cartesian(
                 my_object.coordinates[0], my_object.coordinates[1]
             )
@@ -661,7 +662,6 @@ class GameView(View):
                     enemies = [sprite for sprite in sprite_list if isinstance(sprite, Enemy)]
                     if enemies:
                         enemy = enemies[0]
-                        print(enemy.health)
                         assert isinstance(enemy, Enemy), f"{enemy=} is not an Enemy"
 
                         # The collision was with an enemy
