@@ -189,10 +189,11 @@ class GameView(View):
         enemies_layer = self.tile_map.get_tilemap_layer('Enemies')
 
         for my_object in enemies_layer.tiled_objects:
-            continue
             cartesian = self.tile_map.get_cartesian(
                 my_object.coordinates[0], my_object.coordinates[1]
             )
+            my_object._start_xy = cartesian
+            continue
             enemy_type = my_object.class_
             if enemy_type == "robot":
                 enemy = Robot()
@@ -591,9 +592,22 @@ class GameView(View):
 
         # See if the enemy hit a boundary and needs to reverse direction.
         for enemy in self.scene.get_sprite_list(LAYER_NAME_ENEMIES):
+            curx, cury = self.tile_map.get_cartesian(enemy.center_x, enemy.center_y)
+            if not hasattr(enemy, '_start_xy'):
+                enemy._start_xy = curx, cury
+            initx, _ = enemy._start_xy
+
+            # Turn based on boundary in pixels
             if (
                 enemy.boundary_right
                 and enemy.right > enemy.boundary_right
+                and enemy.change_x > 0
+            ):
+                enemy.change_x *= -1
+            # Turned based on tile offset relative to start position
+            elif (
+                'tile_right' in enemy.properties
+                and initx + enemy.properties['tile_right'] < curx
                 and enemy.change_x > 0
             ):
                 enemy.change_x *= -1
@@ -604,6 +618,13 @@ class GameView(View):
                 and enemy.change_x < 0
             ):
                 enemy.change_x *= -1
+            elif (
+                'tile_left' in enemy.properties
+                and initx - enemy.properties['tile_left'] > curx
+                and enemy.change_x < 0
+            ):
+                enemy.change_x *= -1
+
 
         # See if the moving wall hit a boundary and needs to reverse direction.
         for wall in self.scene.get_sprite_list(LAYER_NAME_MOVING_PLATFORMS):
@@ -659,15 +680,22 @@ class GameView(View):
 
                 for collision in hit_list:
                     sprite_list = self.scene.get_sprite_list(LAYER_NAME_ENEMIES)
-                    enemies = [sprite for sprite in sprite_list if isinstance(sprite, Enemy)]
+                    enemies = [
+                        sprite for sprite in sprite_list if isinstance(sprite, Enemy)
+                        or sprite.properties.get('type', None).startswith('enemy_')
+                    ]
                     if enemies:
                         enemy = enemies[0]
-                        assert isinstance(enemy, Enemy), f"{enemy=} is not an Enemy"
+                        if isinstance(enemy, Enemy) and hasattr(enemy, 'health'):
+                            # The collision was with an enemy
+                            enemy.health -= BULLET_DAMAGE
 
-                        # The collision was with an enemy
-                        enemy.health -= BULLET_DAMAGE
-
-                        if enemy.health <= 0:
+                            if enemy.health <= 0:
+                                enemy.kill()
+                                self.score += 100
+                                log(f'Enemy killed: {enemy}')
+                                collision.remove_from_sprite_lists()
+                        else:
                             enemy.kill()
                             self.score += 100
                             log(f'Enemy killed: {enemy}')

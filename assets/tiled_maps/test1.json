@@ -350,22 +350,22 @@
                  "name":"",
                  "properties":[
                         {
-                         "name":"boundary_left",
-                         "type":"float",
-                         "value":290
-                        }, 
-                        {
-                         "name":"boundary_right",
-                         "type":"float",
-                         "value":390
-                        }, 
-                        {
                          "name":"change_x",
                          "type":"float",
                          "value":-3
+                        }, 
+                        {
+                         "name":"tile_left",
+                         "type":"float",
+                         "value":5
+                        }, 
+                        {
+                         "name":"tile_right",
+                         "type":"float",
+                         "value":2
                         }],
                  "rotation":0,
-                 "type":"hammy0",
+                 "type":"enemy_hammy0",
                  "visible":true,
                  "width":16,
                  "x":336,
