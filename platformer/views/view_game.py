@@ -151,9 +151,20 @@ class GameView(View):
         self.shoot_timer_p1 = 0
         self.shoot_timer_p2 = 0
 
+
         # Set up the player, specifically placing it at these coordinates.
         self.player_sprite_p1 = Player(
             character_number=self.selected_player_p1,
+            center=(
+                # self.tile_map.tiled_map.tile_size[0] * TILE_SCALING * MAP_WIDTH * PLAYER_START_X,
+                # self.tile_map.tiled_map.tile_size[1] * TILE_SCALING * MAP_HEIGHT * PLAYER_START_Y
+                150,
+                200
+            )
+        )
+
+        self.player_sprite_p2 = Player(
+            character_number=self.selected_player_p2,
             center=(
                 # self.tile_map.tiled_map.tile_size[0] * TILE_SCALING * MAP_WIDTH * PLAYER_START_X,
                 # self.tile_map.tiled_map.tile_size[1] * TILE_SCALING * MAP_HEIGHT * PLAYER_START_Y
@@ -161,15 +172,19 @@ class GameView(View):
                 200
             )
         )
-        self.player_sprite_p2 = Player(
-            character_number=self.selected_player_p2,
-            center=(
-                # self.tile_map.tiled_map.tile_size[0] * TILE_SCALING * MAP_WIDTH * PLAYER_START_X,
-                # self.tile_map.tiled_map.tile_size[1] * TILE_SCALING * MAP_HEIGHT * PLAYER_START_Y
-                350,
-                200
-            )
-        )
+
+        # DEBUG: override p1 position if there's an object in the Player layer
+        player_layer = self.tile_map.get_tilemap_layer('Player')
+        if player_layer.tiled_objects:
+            x, y = player_layer.tiled_objects[0].coordinates
+            self.player_sprite_p1.center_x = x * TILE_SCALING
+            self.player_sprite_p1.center_y = (800 - y) * TILE_SCALING
+            print(x, y)
+            print(f"DEBUG: overriding p1 position to {self.player_sprite_p1.center_x} {self.player_sprite_p1.center_y}")
+
+            self.player_sprite_p2.center_x = x * TILE_SCALING - 150
+            self.player_sprite_p2.center_y = (800 - y) * TILE_SCALING
+
         self.scene.add_sprite(LAYER_NAME_PLAYER, self.player_sprite_p1)
         self.scene.add_sprite(LAYER_NAME_PLAYER2, self.player_sprite_p2)
 
