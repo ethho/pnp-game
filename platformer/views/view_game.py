@@ -174,7 +174,7 @@ class GameView(View):
         )
 
         if not hasattr(self, '_last_saved_x'):
-            # self._last_saved_x = 8000
+            # self._last_saved_x = 7800
             self._last_saved_x = 300
         if not hasattr(self, '_last_saved_y'):
             # self._last_saved_y = 1300
