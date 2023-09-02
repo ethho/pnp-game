@@ -1312,7 +1312,7 @@
         {
          "draworder":"topdown",
          "id":13,
-         "name":"Player",
+         "name":"Checkpoints",
          "objects":[
                 {
                  "gid":926,
@@ -1325,6 +1325,30 @@
                  "width":16,
                  "x":3296,
                  "y":432
+                }, 
+                {
+                 "gid":926,
+                 "height":16,
+                 "id":57,
+                 "name":"",
+                 "rotation":-90,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":176,
+                 "y":704
+                }, 
+                {
+                 "gid":926,
+                 "height":16,
+                 "id":59,
+                 "name":"",
+                 "rotation":-90,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":304,
+                 "y":704
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1394,7 +1418,7 @@
          "y":0
         }],
  "nextlayerid":15,
- "nextobjectid":55,
+ "nextobjectid":60,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.10.1",

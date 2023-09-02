@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.10.1" name="tux_bros_collection" tilewidth="24" tileheight="16" tilecount="53" columns="0">
+<tileset version="1.10" tiledversion="1.10.1" name="tux_bros_collection" tilewidth="24" tileheight="16" tilecount="54" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <transformations hflip="1" vflip="0" rotate="0" preferuntransformed="0"/>
  <tile id="0">
@@ -160,5 +160,8 @@
  </tile>
  <tile id="52">
   <image width="16" height="16" source="images/hammy0.png"/>
+ </tile>
+ <tile id="53">
+  <image width="16" height="16" source="../../../Downloads/pixil-frame-0.png"/>
  </tile>
 </tileset>
