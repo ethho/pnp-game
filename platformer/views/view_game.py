@@ -172,7 +172,11 @@ class GameView(View):
                 200
             )
         )
-        self._last_saved_x = 400
+
+        if not hasattr(self, '_last_saved_x'):
+            self._last_saved_x = 300
+        if not hasattr(self, '_last_saved_y'):
+            self._last_saved_y = 200
 
         # DEBUG: override p1 position if there's an object in the Checkpoints layer
         chpt_layer = self.tile_map.get_tilemap_layer('Checkpoints')
@@ -182,25 +186,19 @@ class GameView(View):
                 key=lambda x: x.coordinates[0]
             )):
                 checkpoint_sprite = arcade.Sprite(
-                    texture=arcade.load_texture("assets/images/block_color_brown.png"),
-                    scale=1.0,
+                    texture=arcade.load_texture("assets/images/block_color_red1.png"),
+                    scale=0.3,
                     center_x=checkpoint.coordinates[0] * TILE_SCALING,
                     center_y=(800 - checkpoint.coordinates[1]) * TILE_SCALING,
                 )
                 self.scene.add_sprite('Checkpoints', checkpoint_sprite)
-            reached_checkpoints = sorted([
-                checkpoint for checkpoint in self.scene.name_mapping['Checkpoints']
-                if checkpoint.center_x <= self._last_saved_x
-            ], key=lambda x: x.center_x)
-            print('reached_checkpoints:', reached_checkpoints)
-            last_reached_checkpoint = reached_checkpoints[-1]
-            x, y = last_reached_checkpoint.center_x, last_reached_checkpoint.center_y
-            self.player_sprite_p1.center_x = x
-            self.player_sprite_p1.center_y = y
+
+            self.player_sprite_p1.center_x = self._last_saved_x
+            self.player_sprite_p1.center_y = self._last_saved_y
             log(f"DEBUG: overriding p1 position to {self.player_sprite_p1.center_x} {self.player_sprite_p1.center_y}")
 
-            self.player_sprite_p2.center_x = x - 150
-            self.player_sprite_p2.center_y = y
+            self.player_sprite_p2.center_x = self._last_saved_x - 150
+            self.player_sprite_p2.center_y = self._last_saved_y
 
         self.scene.add_sprite(LAYER_NAME_PLAYER, self.player_sprite_p1)
         self.scene.add_sprite(LAYER_NAME_PLAYER2, self.player_sprite_p2)
@@ -802,8 +800,10 @@ class GameView(View):
                 self.player_sprite_p1.hit_enemy = True
                 self.player_sprite_p1.kill()
             elif checkpoints in collision.sprite_lists:
-                self._last_saved_x = max(self.player_sprite_p1.center_x, self._last_saved_x)
-                print(f"Found checkpoint at {self._last_saved_x}")
+                if self._last_saved_x < self.player_sprite_p1.center_x:
+                    self._last_saved_x = self.player_sprite_p1.center_x
+                    self._last_saved_y = self.player_sprite_p1.center_y
+                log(f"Found checkpoint at {self._last_saved_x}")
             else:
                 # Figure out how many points this coin is worth
                 if "Points" not in collision.properties:
@@ -823,8 +823,9 @@ class GameView(View):
                 self.player_sprite_p2.hit_enemy = True
                 self.player_sprite_p2.kill()
             elif checkpoints in collision.sprite_lists:
-                self._last_saved_x = max(self.player_sprite_p2.center_x, self._last_saved_x)
-                print(f"Found checkpoint at {self._last_saved_x}")
+                if self._last_saved_x < self.player_sprite_p2.center_x:
+                    self._last_saved_x = self.player_sprite_p2.center_x
+                    self._last_saved_y = self.player_sprite_p2.center_y
             else:
                 # Figure out how many points this coin is worth
                 if "Points" not in collision.properties:
@@ -841,6 +842,8 @@ class GameView(View):
             arcade.play_sound(self.game_over)
             game_over_view = self.window.views["game_over"]
             game_over_view._last_saved_x = self._last_saved_x
+            game_over_view._last_saved_y = self._last_saved_y
+            print(f"Saving last checkpoint at {self._last_saved_x} {self._last_saved_y}")
             self.window.show_view(game_over_view)
             return
 

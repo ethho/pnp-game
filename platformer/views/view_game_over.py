@@ -32,11 +32,10 @@ class GameOverView(View):
         def on_click_restart(event):
             self.window.views["game"].setup()
             game_view = self.window.views["game"]
-            if hasattr(self, '_last_saved_x'):
-                game_view._last_saved_x = max(
-                    self._last_saved_x,
-                    game_view._last_saved_x
-                )
+            print(f"Using last checkpoint at {self._last_saved_x} {self._last_saved_y}")
+            if hasattr(self, '_last_saved_x') and hasattr(game_view, '_last_saved_y'):
+                game_view._last_saved_x = self._last_saved_x
+                game_view._last_saved_y = self._last_saved_y
             self.window.show_view(game_view)
 
         self.v_box.add(restart_button.with_space_around(bottom=20))
@@ -63,4 +62,15 @@ class GameOverView(View):
             anchor_x="center",
             anchor_y="center",
         )
+        last_saved_x = getattr(self, '_last_saved_x', None)
+        if last_saved_x is not None:
+            arcade.draw_text(
+                f"Last saved at {int(last_saved_x / 100)} meters",
+                self.window.width / 3 + 180,
+                self.window.height / 3,
+                arcade.color.WHITE,
+                20,
+                anchor_x="center",
+                anchor_y="center",
+            )
         self.ui_manager.draw()
