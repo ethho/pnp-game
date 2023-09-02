@@ -174,11 +174,11 @@ class GameView(View):
         )
 
         if not hasattr(self, '_last_saved_x'):
-            self._last_saved_x = 8000
-            # self._last_saved_x = 300
+            # self._last_saved_x = 8000
+            self._last_saved_x = 300
         if not hasattr(self, '_last_saved_y'):
-            self._last_saved_y = 1300
-            # self._last_saved_y = 200
+            # self._last_saved_y = 1300
+            self._last_saved_y = 200
 
         # DEBUG: override p1 position if there's an object in the Checkpoints layer
         chpt_layer = self.tile_map.get_tilemap_layer('Checkpoints')
