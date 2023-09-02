@@ -1763,18 +1763,6 @@
                 {
                  "gid":926,
                  "height":16,
-                 "id":57,
-                 "name":"",
-                 "rotation":-90,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":176,
-                 "y":704
-                }, 
-                {
-                 "gid":926,
-                 "height":16,
                  "id":60,
                  "name":"",
                  "rotation":-90,
