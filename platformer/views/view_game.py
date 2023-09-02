@@ -174,7 +174,7 @@ class GameView(View):
         )
 
         # DEBUG: override p1 position if there's an object in the Player layer
-        player_layer = self.tile_map.get_tilemap_layer('Player')
+        player_layer = self.tile_map.get_tilemap_layer('Checkpoints')
         if player_layer.tiled_objects:
             x, y = player_layer.tiled_objects[0].coordinates
             self.player_sprite_p1.center_x = x * TILE_SCALING
