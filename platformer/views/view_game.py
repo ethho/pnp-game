@@ -172,18 +172,35 @@ class GameView(View):
                 200
             )
         )
+        self._last_saved_x = 400
 
-        # DEBUG: override p1 position if there's an object in the Player layer
-        player_layer = self.tile_map.get_tilemap_layer('Player')
-        if player_layer.tiled_objects:
-            x, y = player_layer.tiled_objects[0].coordinates
-            self.player_sprite_p1.center_x = x * TILE_SCALING
-            self.player_sprite_p1.center_y = (800 - y) * TILE_SCALING
-            print(x, y)
-            print(f"DEBUG: overriding p1 position to {self.player_sprite_p1.center_x} {self.player_sprite_p1.center_y}")
+        # DEBUG: override p1 position if there's an object in the Checkpoints layer
+        chpt_layer = self.tile_map.get_tilemap_layer('Checkpoints')
+        if chpt_layer.tiled_objects:
+            for i, checkpoint in enumerate(sorted(
+                chpt_layer.tiled_objects,
+                key=lambda x: x.coordinates[0]
+            )):
+                checkpoint_sprite = arcade.Sprite(
+                    texture=arcade.load_texture("assets/images/block_color_brown.png"),
+                    scale=1.0,
+                    center_x=checkpoint.coordinates[0] * TILE_SCALING,
+                    center_y=(800 - checkpoint.coordinates[1]) * TILE_SCALING,
+                )
+                self.scene.add_sprite('Checkpoints', checkpoint_sprite)
+            reached_checkpoints = sorted([
+                checkpoint for checkpoint in self.scene.name_mapping['Checkpoints']
+                if checkpoint.center_x <= self._last_saved_x
+            ], key=lambda x: x.center_x)
+            print('reached_checkpoints:', reached_checkpoints)
+            last_reached_checkpoint = reached_checkpoints[-1]
+            x, y = last_reached_checkpoint.center_x, last_reached_checkpoint.center_y
+            self.player_sprite_p1.center_x = x
+            self.player_sprite_p1.center_y = y
+            log(f"DEBUG: overriding p1 position to {self.player_sprite_p1.center_x} {self.player_sprite_p1.center_y}")
 
-            self.player_sprite_p2.center_x = x * TILE_SCALING - 150
-            self.player_sprite_p2.center_y = (800 - y) * TILE_SCALING
+            self.player_sprite_p2.center_x = x - 150
+            self.player_sprite_p2.center_y = y
 
         self.scene.add_sprite(LAYER_NAME_PLAYER, self.player_sprite_p1)
         self.scene.add_sprite(LAYER_NAME_PLAYER2, self.player_sprite_p2)
@@ -714,15 +731,17 @@ class GameView(View):
         player_collision_list_p1 = arcade.check_for_collision_with_lists(
             self.player_sprite_p1,
             [
-                self.scene.get_sprite_list(LAYER_NAME_COINS),
+                # self.scene.get_sprite_list(LAYER_NAME_COINS),
                 self.scene.get_sprite_list(LAYER_NAME_ENEMIES),
+                self.scene.get_sprite_list('Checkpoints'),
             ],
         )
         player_collision_list_p2 = arcade.check_for_collision_with_lists(
             self.player_sprite_p2,
             [
-                self.scene.get_sprite_list(LAYER_NAME_COINS),
+                # self.scene.get_sprite_list(LAYER_NAME_COINS),
                 self.scene.get_sprite_list(LAYER_NAME_ENEMIES),
+                self.scene.get_sprite_list('Checkpoints'),
             ],
         )
 
@@ -774,6 +793,7 @@ class GameView(View):
                 bullet.remove_from_sprite_lists()
 
         # Loop through each coin we hit (if any) and remove it
+        checkpoints = self.scene.get_sprite_list('Checkpoints')
         for collision in player_collision_list_p1:
 
             if self.scene.get_sprite_list(LAYER_NAME_ENEMIES) in collision.sprite_lists:
@@ -781,6 +801,9 @@ class GameView(View):
                 # arcade.play_sound(self.game_over)
                 self.player_sprite_p1.hit_enemy = True
                 self.player_sprite_p1.kill()
+            elif checkpoints in collision.sprite_lists:
+                self._last_saved_x = max(self.player_sprite_p1.center_x, self._last_saved_x)
+                print(f"Found checkpoint at {self._last_saved_x}")
             else:
                 # Figure out how many points this coin is worth
                 if "Points" not in collision.properties:
@@ -799,6 +822,9 @@ class GameView(View):
                 # arcade.play_sound(self.game_over)
                 self.player_sprite_p2.hit_enemy = True
                 self.player_sprite_p2.kill()
+            elif checkpoints in collision.sprite_lists:
+                self._last_saved_x = max(self.player_sprite_p2.center_x, self._last_saved_x)
+                print(f"Found checkpoint at {self._last_saved_x}")
             else:
                 # Figure out how many points this coin is worth
                 if "Points" not in collision.properties:
@@ -811,10 +837,11 @@ class GameView(View):
                 collision.remove_from_sprite_lists()
                 arcade.play_sound(self.collect_coin_sound)
 
-
         if self.player_sprite_p1.is_dead and self.player_sprite_p2.is_dead:
             arcade.play_sound(self.game_over)
-            self.window.show_view(self.window.views["game_over"])
+            game_over_view = self.window.views["game_over"]
+            game_over_view._last_saved_x = self._last_saved_x
+            self.window.show_view(game_over_view)
             return
 
         # Position the camera

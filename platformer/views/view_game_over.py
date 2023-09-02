@@ -31,7 +31,13 @@ class GameOverView(View):
         @restart_button.event("on_click")
         def on_click_restart(event):
             self.window.views["game"].setup()
-            self.window.show_view(self.window.views["game"])
+            game_view = self.window.views["game"]
+            if hasattr(self, '_last_saved_x'):
+                game_view._last_saved_x = max(
+                    self._last_saved_x,
+                    game_view._last_saved_x
+                )
+            self.window.show_view(game_view)
 
         self.v_box.add(restart_button.with_space_around(bottom=20))
 
