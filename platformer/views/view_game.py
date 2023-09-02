@@ -174,9 +174,11 @@ class GameView(View):
         )
 
         if not hasattr(self, '_last_saved_x'):
-            self._last_saved_x = 300
+            self._last_saved_x = 8000
+            # self._last_saved_x = 300
         if not hasattr(self, '_last_saved_y'):
-            self._last_saved_y = 200
+            self._last_saved_y = 1300
+            # self._last_saved_y = 200
 
         # DEBUG: override p1 position if there's an object in the Checkpoints layer
         chpt_layer = self.tile_map.get_tilemap_layer('Checkpoints')
@@ -773,6 +775,9 @@ class GameView(View):
                                 self.score += 100
                                 log(f'Enemy killed: {enemy}')
                                 collision.remove_from_sprite_lists()
+                        elif 'health' in collision.properties and collision.properties['health'] >= 10000:
+                            # Invincible
+                            bullet.remove_from_sprite_lists()
                         else:
                             enemy.kill()
                             self.score += 100
@@ -803,7 +808,7 @@ class GameView(View):
                 if self._last_saved_x < self.player_sprite_p1.center_x:
                     self._last_saved_x = self.player_sprite_p1.center_x
                     self._last_saved_y = self.player_sprite_p1.center_y
-                log(f"Found checkpoint at {self._last_saved_x}")
+                    arcade.play_sound(self.collect_coin_sound)
             else:
                 # Figure out how many points this coin is worth
                 if "Points" not in collision.properties:
@@ -826,6 +831,7 @@ class GameView(View):
                 if self._last_saved_x < self.player_sprite_p2.center_x:
                     self._last_saved_x = self.player_sprite_p2.center_x
                     self._last_saved_y = self.player_sprite_p2.center_y
+                    arcade.play_sound(self.collect_coin_sound)
             else:
                 # Figure out how many points this coin is worth
                 if "Points" not in collision.properties:
