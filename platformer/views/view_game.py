@@ -245,7 +245,7 @@ class GameView(View):
         # Create the 'physics engine'
         self.physics_engine_p1 = arcade.PhysicsEnginePlatformer(
             self.player_sprite_p1,
-            # platforms=self.scene.name_mapping[LAYER_NAME_MOVING_PLATFORMS],
+            platforms=self.scene.name_mapping[LAYER_NAME_MOVING_PLATFORMS],
             walls=self.scene.name_mapping[LAYER_NAME_PLATFORMS],
             gravity_constant=GRAVITY,
             # ladders=self.scene.name_mapping[LAYER_NAME_LADDERS],
@@ -254,7 +254,7 @@ class GameView(View):
 
         self.physics_engine_p2 = arcade.PhysicsEnginePlatformer(
             self.player_sprite_p2,
-            # platforms=self.scene.name_mapping[LAYER_NAME_MOVING_PLATFORMS],
+            platforms=self.scene.name_mapping[LAYER_NAME_MOVING_PLATFORMS],
             walls=self.scene.name_mapping[LAYER_NAME_PLATFORMS],
             gravity_constant=GRAVITY,
             # ladders=self.scene.name_mapping[LAYER_NAME_LADDERS],
@@ -314,6 +314,12 @@ class GameView(View):
         self.process_keychange_p1()
         self.process_keychange_p2()
 
+    def is_on_moving_platform(self, player):
+        for platform in self.name_mapping(LAYER_NAME_MOVING_PLATFORMS):
+            if arcade.check_for_collision(player, platform):
+                return platform
+        return None
+
     def process_keychange_p1(self):
         """
         Called when we change a key up/down or we move on/off a ladder.
@@ -348,6 +354,12 @@ class GameView(View):
         else:
             self.player_sprite_p1.change_x = 0
 
+        # Process changes in x due to moving platforms
+        moving_platform = self.is_on_moving_platform(self.player_sprite_p1)
+        if moving_platform is not None:
+            self.player_sprite_p1.change_x += moving_platform.change_x
+            self.player_sprite_p1.change_y += moving_platform.change_y
+
     def process_keychange_p2(self):
         """
         Called when we change a key up/down or we move on/off a ladder.
@@ -381,6 +393,12 @@ class GameView(View):
             self.player_sprite_p2.change_x = -PLAYER_MOVEMENT_SPEED
         else:
             self.player_sprite_p2.change_x = 0
+
+        # Process changes in x due to moving platforms
+        moving_platform = self.is_on_moving_platform(self.player_sprite_p2)
+        if moving_platform is not None:
+            self.player_sprite_p2.change_x += moving_platform.change_x
+            self.player_sprite_p2.change_y += moving_platform.change_y
 
     def on_key_press(self, key, modifiers):
         self.on_key_press_p1(key, modifiers)
@@ -643,10 +661,20 @@ class GameView(View):
 
         # See if the moving wall hit a boundary and needs to reverse direction.
         for wall in self.scene.get_sprite_list(LAYER_NAME_MOVING_PLATFORMS):
+            curx, cury = self.tile_map.get_cartesian(wall.center_x, wall.center_y)
+            if not hasattr(wall, '_start_xy'):
+                wall._start_xy = curx, cury
+            initx, inity = wall._start_xy
 
             if (
                 wall.boundary_right
                 and wall.right > wall.boundary_right
+                and wall.change_x > 0
+            ):
+                wall.change_x *= -1
+            elif (
+                'tile_right' in wall.properties
+                and initx + wall.properties['tile_right'] < curx
                 and wall.change_x > 0
             ):
                 wall.change_x *= -1
@@ -656,12 +684,30 @@ class GameView(View):
                 and wall.change_x < 0
             ):
                 wall.change_x *= -1
+            elif (
+                'tile_left' in wall.properties
+                and initx - wall.properties['tile_left'] > curx
+                and wall.change_x < 0
+            ):
+                wall.change_x *= -1
             if wall.boundary_top and wall.top > wall.boundary_top and wall.change_y > 0:
+                wall.change_y *= -1
+            elif (
+                'tile_bot' in wall.properties
+                and inity - wall.properties['tile_bot'] > cury
+                and wall.change_y < 0
+            ):
                 wall.change_y *= -1
             if (
                 wall.boundary_bottom
                 and wall.bottom < wall.boundary_bottom
                 and wall.change_y < 0
+            ):
+                wall.change_y *= -1
+            elif (
+                'tile_top' in wall.properties
+                and inity + wall.properties['tile_top'] < cury
+                and wall.change_y > 0
             ):
                 wall.change_y *= -1
 
